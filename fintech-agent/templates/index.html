@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Fintech RAG Agent</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    
+    * {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #0a0e1a 0%, #1a1f35 100%);
+      min-height: 100vh;
+    }
+    
+    .glass-card {
+      background: rgba(17, 24, 39, 0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    
+    .gradient-text {
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(59, 130, 246, 0.4);
+    }
+    
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    textarea:focus, input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .message-bubble {
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .pill {
+      display: inline-block;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #60a5fa;
+    }
+    
+    .pill.user {
+      background: rgba(139, 92, 246, 0.1);
+      border-color: rgba(139, 92, 246, 0.3);
+      color: #a78bfa;
+    }
+    
+    .thinking-dots {
+      display: inline-flex;
+      gap: 4px;
+    }
+    
+    .thinking-dots span {
+      width: 8px;
+      height: 8px;
+      background: #60a5fa;
+      border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+    
+    .thinking-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .thinking-dots span:nth-child(2) { animation-delay: -0.16s; }
+    
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+    
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    
+    .checkbox-wrapper input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #3b82f6;
+    }
+  </style>
+</head>
+<body class="text-gray-100">
+  <div class="max-w-5xl mx-auto px-4 py-8 md:py-12">
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4">
+        <span class="gradient-text">Fintech RAG Agent</span>
+      </h1>
+      <p class="text-gray-400 text-lg">
+        Intelligent insights from your <code class="px-2 py-1 bg-gray-800 rounded text-blue-400">Fintech_intake.docx</code>
+      </p>
+    </div>
+
+    <!-- Question Input Card -->
+    <div class="glass-card rounded-2xl p-6 md:p-8 mb-6">
+      <label for="question" class="block text-sm font-semibold text-gray-300 mb-3">
+        Ask a Question
+      </label>
+      <textarea 
+        id="question" 
+        rows="4" 
+        placeholder="e.g., Print all of the project names"
+        class="w-full bg-gray-900/50 text-gray-100 border border-gray-700 rounded-xl px-4 py-3 resize-none transition-all duration-200 placeholder-gray-500"
+      ></textarea>
+      
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4">
+        <button 
+          id="askBtn" 
+          class="btn-primary text-white font-semibold px-8 py-3 rounded-xl w-full sm:w-auto"
+        >
+          Ask Question
+        </button>
+        
+        <label class="checkbox-wrapper text-sm text-gray-400">
+          <input type="checkbox" id="keepHistory" checked />
+          <span>Keep conversation history</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Answer Card -->
+    <div class="glass-card rounded-2xl p-6 md:p-8 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold text-gray-100">Answer</h3>
+        <div id="statusIndicator" class="hidden">
+          <div class="thinking-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+      <div 
+        id="answer" 
+        class="bg-gray-900/50 border border-gray-700 rounded-xl p-4 min-h-[120px] text-gray-300 whitespace-pre-wrap leading-relaxed"
+      >
+        <span class="text-gray-500 italic">Your answer will appear here...</span>
+      </div>
+    </div>
+
+    <!-- Conversation History Card -->
+    <div class="glass-card rounded-2xl p-6 md:p-8">
+      <h3 class="text-xl font-bold text-gray-100 mb-4">Conversation History</h3>
+      <div id="historyBox" class="space-y-3">
+        <p class="text-gray-500 italic text-sm">No conversation yet</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center mt-8 text-gray-500 text-sm">
+    </div>
+  </div>
+
+  <script>
+    const askBtn = document.getElementById('askBtn');
+    const qEl = document.getElementById('question');
+    const ansEl = document.getElementById('answer');
+    const keepHistoryEl = document.getElementById('keepHistory');
+    const historyBox = document.getElementById('historyBox');
+    const statusIndicator = document.getElementById('statusIndicator');
+
+    let history = []; // {role:'user'|'assistant', content: string}
+
+    function renderHistory() {
+      if (!history.length) { 
+        historyBox.innerHTML = '<p class="text-gray-500 italic text-sm">No conversation yet</p>';
+        return; 
+      }
+      
+      historyBox.innerHTML = history.map(h => `
+        <div class="message-bubble bg-gray-900/30 border border-gray-700 rounded-lg p-4">
+          <span class="pill ${h.role === 'user' ? 'user' : ''}">${h.role}</span>
+          <p class="mt-2 text-gray-300 text-sm leading-relaxed">${escapeHtml(h.content)}</p>
+        </div>
+      `).join('');
+    }
+
+    function escapeHtml(s) {
+      return (s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    async function ask() {
+      const question = qEl.value.trim();
+      if (!question) return;
+
+      askBtn.disabled = true;
+      askBtn.textContent = 'Thinking...';
+      statusIndicator.classList.remove('hidden');
+      ansEl.innerHTML = '<span class="text-gray-500 italic">Processing your question...</span>';
+
+      const body = { question };
+      if (keepHistoryEl.checked && history.length) body.history = history;
+
+      try {
+        const resp = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await resp.json();
+
+        // Normalize display for JSON vs text
+        let displayAnswer = '';
+        if (typeof data.answer === 'object' && data.answer !== null) {
+          if (Array.isArray(data.answer.result)) {
+            displayAnswer = data.answer.result.join('\n');
+          } else {
+            displayAnswer = typeof data.answer.result === 'string'
+              ? data.answer.result
+              : JSON.stringify(data.answer, null, 2);
+          }
+        } else {
+          displayAnswer = data.answer || '(no answer)';
+        }
+
+        // Strip any inline [chunk_id] like [a1b2c3d4] from the visible text
+        displayAnswer = (displayAnswer || '').replace(/\s*\[[0-9a-fA-F]{8}\]/g, '');
+
+        ansEl.textContent = displayAnswer;
+
+        // Update client-side history
+        if (keepHistoryEl.checked) {
+          history.push({ role: 'user', content: question });
+          history.push({ role: 'assistant', content: displayAnswer });
+          renderHistory();
+        } else {
+          history = [];
+          renderHistory();
+        }
+
+      } catch (e) {
+        ansEl.innerHTML = `<span class="text-red-400">Error: ${escapeHtml(e.message)}</span>`;
+      } finally {
+        askBtn.disabled = false;
+        askBtn.textContent = 'Ask Question';
+        statusIndicator.classList.add('hidden');
+      }
+    }
+
+    askBtn.addEventListener('click', ask);
+    qEl.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') ask();
+    });
+
+    renderHistory();
+  </script>
+</body>
+</html>

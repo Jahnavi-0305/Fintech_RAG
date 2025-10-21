@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Fintech RAG Agent</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { 
+      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      --bg-primary: #0a0e1a;
+      --bg-secondary: #111827;
+      --bg-tertiary: #1a2332;
+      --accent-primary: #3b82f6;
+      --accent-glow: rgba(59, 130, 246, 0.3);
+      --text-primary: #f3f4f6;
+      --text-secondary: #9ca3af;
+      --border-color: #1f2937;
+      --success: #10b981;
+    }
+    
+    * { box-sizing: border-box; }
+    
+    body { 
+      margin: 0; 
+      background: linear-gradient(135deg, #0a0e1a 0%, #1a1f35 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 80%, rgba(147, 51, 234, 0.05) 0%, transparent 50%);
+      animation: pulse 15s ease-in-out infinite;
+      pointer-events: none;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(-5%, -5%); }
+    }
+    
+    .container { 
+      max-width: 920px; 
+      margin: 0 auto; 
+      padding: 40px 20px 80px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+      animation: fadeInDown 0.6s ease-out;
+    }
+    
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    h1 { 
+      font-size: 48px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 0 0 12px 0;
+      letter-spacing: -1px;
+    }
+    
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .subtitle code {
+      background: var(--bg-tertiary);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      color: var(--accent-primary);
+      border: 1px solid var(--border-color);
+    }
+    
+    .card { 
+      background: rgba(17, 24, 39, 0.8);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4),
+                  0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      animation: fadeInUp 0.6s ease-out backwards;
+    }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .card:nth-child(2) { animation-delay: 0.1s; }
+    .card:nth-child(3) { animation-delay: 0.2s; }
+    .card:nth-child(4) { animation-delay: 0.3s; }
+    
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5),
+                  0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+    }
+    
+    label { 
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+      letter-spacing: 0.3px;
+    }
+    
+    textarea, input[type="text"] { 
+      width: 100%;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: 2px solid var(--border-color);
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 15px;
+      line-height: 1.6;
+      transition: all 0.3s ease;
+      font-family: inherit;
+      resize: vertical;
+    }
+    
+    textarea:focus, input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px var(--accent-glow),
+                  0 4px 12px rgba(0, 0, 0, 0.3);
+      background: rgba(10, 14, 26, 0.9);
+    }
+    
+    textarea::placeholder, input::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.6;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    
+    button { 
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      border: 0;
+      border-radius: 12px;
+      padding: 14px 32px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+    
+    button:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    button:disabled { 
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: var(--accent-primary);
+    }
+    
+    h3 {
+      margin: 0 0 16px 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    h3::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+      border-radius: 2px;
+    }
+    
+    .answer { 
+      white-space: pre-wrap;
+      background: var(--bg-primary);
+      border: 2px solid var(--border-color);
+      border-radius: 14px;
+      padding: 20px;
+      min-height: 120px;
+      line-height: 1.7;
+      font-size: 15px;
+      transition: all 0.3s ease;
+    }
+    
+    .answer.loading {
+      background: linear-gradient(90deg, 
+        var(--bg-primary) 0%, 
+        var(--bg-tertiary) 50%, 
+        var(--bg-primary) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite;
+      color: var(--text-secondary);
+    }
+    
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    
+    .pill { 
+      display: inline-block;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 6px 12px;
+      border-radius: 20px;
+      margin: 4px 8px 4px 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #93c5fd;
+      transition: all 0.2s ease;
+    }
+    
+    .pill:hover {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(139, 92, 246, 0.25));
+      transform: scale(1.05);
+    }
+    
+    .muted { 
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+    
+    #historyBox {
+      font-size: 13px;
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 12px;
+      background: var(--bg-primary);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+    
+    #historyBox::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    #historyBox::-webkit-scrollbar-track {
+      background: var(--bg-primary);
+      border-radius: 4px;
+    }
+    
+    #historyBox::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
+    
+    #historyBox::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-primary);
+    }
+    
+    #historyBox > div {
+      padding: 10px;
+      margin-bottom: 8px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 8px;
+      border-left: 3px solid var(--accent-primary);
+    }
+    
+    .status-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      margin-left: 8px;
+      box-shadow: 0 0 8px var(--success);
+      animation: blink 2s ease-in-out infinite;
+    }
+    
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    
+    @media (max-width: 640px) {
+      h1 { font-size: 36px; }
+      .card { padding: 20px; }
+      .controls { flex-direction: column; align-items: stretch; }
+      button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Fintech RAG Agent</h1>
+      <p class="subtitle">
+        Ask questions about your 
+        <code>Fintech_intake.docx</code>
+        <span class="status-indicator"></span>
+      </p>
+    </header>
+
+    <div class="card">
+      <label for="question">Your Question</label>
+      <textarea id="question" rows="3" placeholder="e.g., Print all of the project names, or summarize the key initiatives..."></textarea>
+      <div class="controls">
+        <button id="askBtn">
+          <span style="position: relative;">Ask AI</span>
+        </button>
+        <label class="checkbox-wrapper">
+          <input type="checkbox" id="keepHistory" checked />
+          Keep conversation history
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Answer</h3>
+      <div id="answer" class="answer">Ask a question to get started...</div>
+    </div>
+
+    <div class="card">
+      <h3>Conversation History</h3>
+      <div id="historyBox" class="muted">No messages yet</div>
+    </div>
+  </div>
+
+  <script>
+    const askBtn = document.getElementById('askBtn');
+    const qEl = document.getElementById('question');
+    const ansEl = document.getElementById('answer');
+    const keepHistoryEl = document.getElementById('keepHistory');
+    const historyBox = document.getElementById('historyBox');
+
+    let history = [];
+
+    function renderHistory() {
+      if (!history.length) { 
+        historyBox.innerHTML = '<div style="text-align: center; padding: 20px;">No messages yet</div>'; 
+        return; 
+      }
+      historyBox.innerHTML = history.map(h => 
+        `<div><span class="pill">${h.role}</span> ${escapeHtml(h.content)}</div>`
+      ).join('');
+    }
+
+    function escapeHtml(s) {
+      return (s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    async function ask() {
+      const question = qEl.value.trim();
+      if (!question) return;
+
+      askBtn.disabled = true;
+      ansEl.textContent = 'Thinking...';
+      ansEl.classList.add('loading');
+
+      const body = { question };
+      if (keepHistoryEl.checked && history.length) body.history = history;
+
+      try {
+        const resp = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await resp.json();
+
+        let displayAnswer = '';
+        if (typeof data.answer === 'object' && data.answer !== null) {
+          if (Array.isArray(data.answer.result)) {
+            displayAnswer = data.answer.result.join('\n');
+          } else {
+            displayAnswer = typeof data.answer.result === 'string'
+              ? data.answer.result
+              : JSON.stringify(data.answer, null, 2);
+          }
+        } else {
+          displayAnswer = data.answer || '(no answer)';
+        }
+
+        displayAnswer = (displayAnswer || '').replace(/\s*\[[0-9a-fA-F]{8}\]/g, '');
+
+        ansEl.textContent = displayAnswer;
+        ansEl.classList.remove('loading');
+
+        if (keepHistoryEl.checked) {
+          history.push({ role: 'user', content: question });
+          history.push({ role: 'assistant', content: displayAnswer });
+          renderHistory();
+        } else {
+          history = [];
+          renderHistory();
+        }
+
+      } catch (e) {
+        ansEl.textContent = 'Error: ' + e.message;
+        ansEl.classList.remove('loading');
+      } finally {
+        askBtn.disabled = false;
+      }
+    }
+
+    askBtn.addEventListener('click', ask);
+    qEl.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') ask();
+    });
+
+    renderHistory();
+  </script>
+</body>
+</html>
