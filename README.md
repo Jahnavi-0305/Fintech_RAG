@@ -14,6 +14,8 @@ pip install -r requirements.txt
 touch .env.example
 
 # set GROQ_API_KEY
+CREATE A GROQ API KEY : https://console.groq.com/home
+
 save .env.example with these:
 GROQ_API_KEY=your_api_key_here
 GROQ_MODEL=llama-3.3-70b-versatile
