@@ -1,159 +1,103 @@
-# Validation Report
-Run: 2025-10-19T23:38:19.192437Z
+# Validation Report — Fintech RAG Agent
+Run: 2025-10-21T07:27:00.282369+00:00
 
-## Q: Team Members for Data Masking Tool — return only names
+## Status / Grouping
 
-**Answer**:
+**Q:** What are the projects in progress? Return only project names.
 
-{
-  "result": [
-    "Lead Developer",
-    "Compliance Officer"
-  ],
-  "citations": [
-    "7554e3bb"
-  ]
-}
+**Answer (plain text):**
 
-**Used Chunks**: ['7554e3bb']
+Investment Portfolio Analyzer
+Loan Eligibility Predictor
+Refinancing Marketing Filter
 
 ---
 
-## Q: Product Owner for Fraud Detection System
+**Q:** List all completed projects. Return only project names.
 
-**Answer**:
+**Answer (plain text):**
 
-{
-  "result": "Jennifer Chang",
-  "citations": [
-    "fe6151d1"
-  ]
-}
-
-**Used Chunks**: ['fe6151d1']
+Data Masking Tool
+Fraud Detection System
+Payment Gateway Optimizer
+Compliance Reporting Automator
+Customer Onboarding Optimizer
 
 ---
 
-## Q: Status for Predictive Maintenance for ATMs
+**Q:** Why were the halted projects stopped? Return only reasons, one per line.
 
-**Answer**:
+**Answer (plain text):**
 
-{
-  "result": "Halted",
-  "citations": [
-    "b4e1e6fd"
-  ]
-}
-
-**Used Chunks**: ['b4e1e6fd']
+High Infrastructure Investment Required
+Regulatory Compliance Complexity
 
 ---
 
-## Q: Reason for Personalized Financial Advice Engine
+## Specific Detail Lookup
 
-**Answer**:
+**Q:** Who is the Product Owner for the Loan Eligibility Predictor?
 
-{
-  "result": "{\n  \"reason\": \"Increase customer engagement with financial products, improve cross-selling opportunities, and enhance customer retention through value-added advisory services\",\n   \"citations\": [\"8a8d6493\"]\n}",
-  "citations": [
-    "8a8d6493"
-  ]
-}
+**Answer (plain text):**
 
-**Used Chunks**: ['8a8d6493']
+David Thompson
 
 ---
 
-## Q: Business Objective for Compliance Reporting Automator
+**Q:** What are the masking techniques used by the Data Masking Tool? Return only techniques, one per line.
 
-**Answer**:
+**Answer (plain text):**
 
-{
-  "result": "{\n  \"business_objective\": \"Eliminate manual errors in compliance reporting, ensure timely submissions, and reduce compliance operational costs while maintaining audit readiness.\",\n   \"citations\": [\"a26916a4\"]\n}",
-  "citations": [
-    "a26916a4"
-  ]
-}
-
-**Used Chunks**: ['a26916a4']
+tokenization
+encryption
+format-preserving encryption
 
 ---
 
-## Q: Value Proposition for Payment Gateway Optimizer
+**Q:** What is the value proposition of the Fraud Detection System? Return only the value proposition.
 
-**Answer**:
+**Answer (plain text):**
 
-{
-  "result": "{\n  \"value_proposition\": \"Increases payment success rates by 10-15%, reduces cart abandonment by 20-30%, lowers payment processing costs, improves customer satisfaction, and provides detailed analytics for business optimization.\",\n   \"citations\": [\"a86865c8\"]\n}",
-  "citations": [
-    "a86865c8"
-  ]
-}
-
-**Used Chunks**: ['a86865c8']
+Reduces fraud losses by 70-85%, minimizes false positives, improves customer confidence, ensures regulatory compliance, and provides detailed forensic capabilities for investigation purposes.
 
 ---
 
-## Q: Team Members for Loan Eligibility Predictor — only names
+## Role / Contact Lookup
 
-**Answer**:
+**Q:** Who is the point of contact (Product Owner) for the Refinancing Marketing Filter?
 
-{
-  "result": [
-    "Product Manager",
-    "ML Engineer"
-  ],
-  "citations": [
-    "044bfd09"
-  ]
-}
+**Answer (plain text):**
 
-**Used Chunks**: ['044bfd09']
+Michael Rodriguez
 
 ---
 
-## Q: Who is the Product Owner for Refinancing Marketing Filter?
+**Q:** What is Jennifer Chang's project? Return only the project name.
 
-**Answer**:
+**Answer (plain text):**
 
-{
-  "result": "Michael Rodriguez",
-  "citations": [
-    "bfd7ace1"
-  ]
-}
-
-**Used Chunks**: ['bfd7ace1']
+Fraud Detection System
 
 ---
 
-## Q: What is the status for Investment Portfolio Analyzer?
+## Summary / Counting
 
-**Answer**:
+**Q:** How many projects are in the document? Return only the number.
 
-{
-  "result": "Not found in Fintech_intake.docx.",
-  "citations": []
-}
+**Answer (plain text):**
 
-**Used Chunks**: ['aba41f87', 'a70e936f', 'be565dff', '1a119c4d', '3d1ade67', '9499c0bc']
+(empty response)
 
 ---
 
-## Q: List Team Members for Customer Onboarding Optimizer — only names
+**Q:** List the names of the completed projects. Return only names, one per line.
 
-**Answer**:
+**Answer (plain text):**
 
-{
-  "result": [
-    "UX Designer",
-    "Business Analyst"
-  ],
-  "citations": [
-    "ec5ff4da"
-  ]
-}
-
-**Used Chunks**: ['ec5ff4da']
+Payment Gateway Optimizer
+Customer Onboarding Optimizer
+Compliance Reporting Automator
+Fraud Detection System
+Data Masking Tool
 
 ---

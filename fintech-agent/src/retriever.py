@@ -1,36 +1,22 @@
-import orjson as json
-from rank_bm25 import BM25Okapi
-import regex as re
-from typing import List, Dict
-import pickle
+# src/retriever.py
+import chromadb
+from sentence_transformers import SentenceTransformer
+from src.config import STORAGE_DIR, TOP_K
 
-def _tok(t: str):
-    return re.findall(r"\p{L}+|\p{N}+", (t or "").lower())
+class ChromaRetriever:
+    def __init__(self):
+        self.client = chromadb.PersistentClient(path=f"{STORAGE_DIR}/chroma")
+        self.collection = self.client.get_or_create_collection("fintech_projects")
+        self.embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
-class ChunkStore:
-    def __init__(self, chunks: List[Dict]):
-        self.chunks = chunks
-        self._by_id = {c["id"]: c for c in chunks}
-
-    def get(self, cid: str) -> Dict:
-        return self._by_id[cid]
-
-class BM25Retriever:
-    def __init__(self, bm25, tokenized_docs, store: ChunkStore):
-        self.bm25 = bm25
-        self.tokenized_docs = tokenized_docs
-        self.store = store
-
-    @classmethod
-    def load(cls, bm25_path: str, chunks_path: str):
-        with open(bm25_path, "rb") as f:
-            bm25, tokenized_docs = pickle.load(f)
-        chunks = [json.loads(line) for line in open(chunks_path, "rb").read().splitlines()]
-        store = ChunkStore(chunks)
-        return cls(bm25, tokenized_docs, store)
-
-    def retrieve(self, query: str, k: int) -> List[Dict]:
-        toks = _tok(query)
-        scores = self.bm25.get_scores(toks)
-        top_idx = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:k]
-        return [self.store.chunks[i] for i in top_idx]
+    def retrieve(self, query: str, k: int = TOP_K):
+        emb = self.embedder.encode(query).tolist()
+        results = self.collection.query(query_embeddings=[emb], n_results=k)
+        docs = []
+        for i in range(len(results["ids"][0])):
+            docs.append({
+                "id": results["ids"][0][i],
+                "text": results["documents"][0][i],
+                "section_path": results["metadatas"][0][i].get("section", "ROOT"),
+            })
+        return docs

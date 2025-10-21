@@ -1,12 +1,12 @@
 from flask import Flask, request, jsonify, render_template
-from .retriever import BM25Retriever
 from .agent import rerank_chunks, answer
+from .retriever import ChromaRetriever
 from .config import BM25_PATH, CHUNKS_PATH, TOP_K
 
 app = Flask(__name__, static_folder="../static", template_folder="../templates")
 
 # Load retriever once at startup
-retriever = BM25Retriever.load(BM25_PATH, CHUNKS_PATH)
+retriever = ChromaRetriever()
 
 @app.route("/health", methods=["GET"])
 def health():

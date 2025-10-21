@@ -10,5 +10,5 @@ pip install -r requirements.txt
 cp .env.example .env  # paste your GROQ_API_KEY
 mkdir -p data storage
 # Put Fintech_intake.docx into ./data
-python scripts/ingest.py
-python scripts/index.py
+python -m scripts.ingest
+python -m scripts.index

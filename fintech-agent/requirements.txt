@@ -6,3 +6,5 @@ rank-bm25==0.2.*
 orjson==3.10.*
 regex==2024.11.*
 uvicorn==0.30.*
+chromadb==0.5.*
+sentence-transformers==3.1.*

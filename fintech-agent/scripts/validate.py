@@ -1,4 +1,4 @@
- # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Validation script for Fintech RAG Agent (Groq + ChromaDB)
 Generates ValidationReport.md with plain-text answers for all query categories.
