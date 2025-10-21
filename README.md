@@ -52,7 +52,7 @@ python scripts/validate.py
 
 
 
-## 🏗️ Architectural Overview
+## Architectural Overview
 
 ### **Model**
 The **Fintech RAG Agent** uses **Groq’s hosted Llama-3.3-70B-Versatile** model through the official Groq Python client.  
