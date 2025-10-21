@@ -1,39 +1,82 @@
+ # -*- coding: utf-8 -*-
+"""
+Validation script for Fintech RAG Agent (Groq + ChromaDB)
+Generates ValidationReport.md with plain-text answers for all query categories.
+Now telemetry & parallelism warnings are fully disabled.
+"""
 
-# -*- coding: utf-8 -*-
-import datetime as dt, orjson as json
-from src.retriever import BM25Retriever
+import os
+from datetime import datetime, timezone
+
+# --- Disable noisy logs and telemetry ---
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["ANONYMIZED_TELEMETRY"] = "False"
+
+# --- Imports ---
+from src.retriever import ChromaRetriever
 from src.agent import rerank_chunks, answer
-from src.config import BM25_PATH, CHUNKS_PATH, TOP_K
+from src.config import TOP_K
 
-
+# ---- Example Queries (Section II categories) ----
 TESTS = [
-    {"q": "Team Members for Data Masking Tool — return only names"},
-    {"q": "Product Owner for Fraud Detection System"},
-    {"q": "Status for Predictive Maintenance for ATMs"},
-    {"q": "Reason for Personalized Financial Advice Engine"},
-    {"q": "Business Objective for Compliance Reporting Automator"},
-    {"q": "Value Proposition for Payment Gateway Optimizer"},
-    {"q": "Team Members for Loan Eligibility Predictor — only names"},
-    {"q": "Who is the Product Owner for Refinancing Marketing Filter?"},
-    {"q": "What is the status for Investment Portfolio Analyzer?"},
-    {"q": "List Team Members for Customer Onboarding Optimizer — only names"},
+    # Status / Grouping
+    {"section": "Status / Grouping", "q": "What are the projects in progress? Return only project names."},
+    {"section": "Status / Grouping", "q": "List all completed projects. Return only project names."},
+    {"section": "Status / Grouping", "q": "Why were the halted projects stopped? Return only reasons, one per line."},
+
+    #Specific Detail Lookup
+    {"section": "Specific Detail Lookup", "q": "Who is the Product Owner for the Loan Eligibility Predictor?"},
+    {"section": "Specific Detail Lookup", "q": "What are the masking techniques used by the Data Masking Tool? Return only techniques, one per line."},
+    {"section": "Specific Detail Lookup", "q": "What is the value proposition of the Fraud Detection System? Return only the value proposition."},
+
+    #Role / Contact Lookup
+    {"section": "Role / Contact Lookup", "q": "Who is the point of contact (Product Owner) for the Refinancing Marketing Filter?"},
+    {"section": "Role / Contact Lookup", "q": "What is Jennifer Chang's project? Return only the project name."},
+
+    #Summary / Counting
+    {"section": "Summary / Counting", "q": "How many projects are in the document? Return only the number."},
+    {"section": "Summary / Counting", "q": "List the names of the completed projects. Return only names, one per line."},
 ]
 
+def run_one(query, retriever):
+    """Run a single query through the RAG pipeline."""
+    try:
+        retrieved = retriever.retrieve(query, TOP_K)
+        selected = rerank_chunks(query, retrieved)
+        res = answer(query, selected)
+        ans = res.get("answer", "").strip()
+        if not ans:
+            ans = "(empty response)"
+        return ans
+    except Exception as e:
+        return f"❌ ERROR: {e}"
+
 if __name__ == "__main__":
-    retriever = BM25Retriever.load(BM25_PATH, CHUNKS_PATH)
-    out = ["# Validation Report", f"Run: {dt.datetime.utcnow().isoformat()}Z", ""]
+    retriever = ChromaRetriever()
+
+    lines = []
+    lines.append("# Validation Report — Fintech RAG Agent")
+    lines.append(f"Run: {datetime.now(timezone.utc).isoformat()}")
+    lines.append("")
+    current_section = None
+
     for t in TESTS:
+        if t["section"] != current_section:
+            current_section = t["section"]
+            lines.append(f"## {current_section}")
+            lines.append("")
+
         q = t["q"]
-        retrieved = retriever.retrieve(q, TOP_K)
-        selected = rerank_chunks(q, retrieved)
-        res = answer(q, selected)
-        out += [f"## Q: {q}", "", "**Answer**:", ""]
-        ans = res["answer"]
-        if isinstance(ans, dict):
-            out.append(json.dumps(ans, option=json.OPT_INDENT_2).decode())
-        else:
-            out.append(ans)
-        out += ["", f"**Used Chunks**: {res['used_chunks']}", "\n---\n"]
+        ans = run_one(q, retriever)
+
+        lines.append(f"**Q:** {q}")
+        lines.append("")
+        lines.append("**Answer (plain text):**")
+        lines.append("")
+        lines.append(ans)
+        lines.append("\n---\n")
+
     with open("ValidationReport.md", "w", encoding="utf-8") as f:
-        f.write("\n".join(out))
-    print("Wrote ValidationReport.md")
+        f.write("\n".join(lines))
+
+    print("Wrote ValidationReport.md (clean, plain-text, no warnings)")
