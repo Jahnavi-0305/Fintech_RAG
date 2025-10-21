@@ -24,13 +24,6 @@ python scripts/index.py
 export FLASK_APP=src/server.py
 python -m flask run --host 0.0.0.0 --port 8000
 ```
-
-### Try It (CLI)
-
-```bash
-python scripts/demo_cli.py "List only Team Members for <Project Name>"
-```
-
 ---
 
 ## 2) Conversation, not Q&A
