@@ -1,4 +1,4 @@
-## Internal Fintech Agent (LLM + RAG) — **Groq-only**
+## Internal Fintech Agent (LLM + RAG)
 
 ### Objective
 
