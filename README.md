@@ -11,7 +11,19 @@ Build a production-ready internal agent that **precisely** extracts information 
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env   # set GROQ_API_KEY
+touch .env.example
+
+# set GROQ_API_KEY
+save .env.example with these:
+GROQ_API_KEY=your_api_key_here
+GROQ_MODEL=llama-3.3-70b-versatile
+DATA_PATH=data/Fintech_intake.docx
+STORAGE_DIR=storage
+TOP_K=12
+MAX_RERANKED=6
+TEMPERATURE=0
+
+cp .env.example .env 
 mkdir -p data storage
 # Put your Fintech_intake.docx into ./data
 python scripts/ingest.py
