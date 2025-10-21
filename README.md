@@ -26,15 +26,14 @@ TEMPERATURE=0
 cp .env.example .env 
 mkdir -p data storage
 # Put your Fintech_intake.docx into ./data
-python scripts/ingest.py
-python scripts/index.py
+python -m scripts.ingest
+python -m scripts.index
 ```
 
 ### Run API
 
 ```bash
-export FLASK_APP=src/server.py
-python -m flask run --host 0.0.0.0 --port 8000
+ python -m src.server
 ```
 ---
 
