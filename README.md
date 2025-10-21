@@ -56,7 +56,7 @@ It documents your agent’s performance across all Section II example queries an
 ---
 
 
-## 🧾 Validation Report — Agent Performance
+## Validation Report — Agent Performance
 
 The following results demonstrate the **Fintech RAG Agent’s** ability to handle all query categories from **Section II: Robust Query Handling**.
 All outputs were generated directly from the `Fintech_intake.docx` source through the live RAG pipeline (no manual editing, no hardcoding).
